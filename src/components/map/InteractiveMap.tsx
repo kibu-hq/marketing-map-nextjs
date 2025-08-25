@@ -1,0 +1,331 @@
+'use client';
+
+import { useEffect, useRef, useState, useCallback } from 'react';
+import * as d3 from 'd3';
+import * as topojson from 'topojson-client';
+import { CustomerData, StateInfo, StateCounts } from '@/lib/types';
+import { MAP_DIMENSIONS, SMALL_STATES_CONFIG, TOOLTIP_CONFIG } from '@/lib/constants';
+import { getStateInfo, calculateStateCounts, getStateColor, generateTooltipContent } from '@/lib/map-utils';
+
+interface InteractiveMapProps {
+  customerData: CustomerData[];
+  onStateSelect: (stateInfo: StateInfo) => void;
+  selectedStateId: string | null;
+}
+
+export default function InteractiveMap({ customerData, onStateSelect, selectedStateId }: InteractiveMapProps) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [stateCounts, setStateCounts] = useState<StateCounts>({});
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Ensure component is mounted before rendering
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Calculate state counts when customer data changes
+  useEffect(() => {
+    const counts = calculateStateCounts(customerData);
+    setStateCounts(counts);
+  }, [customerData]);
+
+  // Create hover behavior for states and callouts
+  const createHoverBehavior = useCallback((element: d3.Selection<any, any, any, any>, stateId: string, isCallout = false) => {
+    element
+      .on("mouseover", function(event) {
+        const stateInfo = getStateInfo(stateId, stateCounts);
+        
+        if (stateId !== selectedStateId) {
+          // Highlight the actual state path
+          const svg = d3.select(svgRef.current);
+          const statePath = svg.selectAll(".states").filter(function(d: any) { return d && d.id === stateId; });
+          if (stateInfo.count > 0) {
+            statePath.transition().duration(300).ease(d3.easeCubicInOut).attr("fill", TOOLTIP_CONFIG.colors.hover);
+          } else {
+            statePath.transition().duration(300).ease(d3.easeCubicInOut).attr("fill", TOOLTIP_CONFIG.colors.noCustomersHover);
+          }
+          
+          // Change callout background if this is a callout
+          if (isCallout) {
+            if (stateInfo.count > 0) {
+              d3.select(this).select("rect").transition().duration(300).ease(d3.easeCubicInOut).attr("fill", TOOLTIP_CONFIG.colors.hover);
+            } else {
+              d3.select(this).select("rect").transition().duration(300).ease(d3.easeCubicInOut).attr("fill", TOOLTIP_CONFIG.colors.noCustomersHover);
+            }
+          }
+        }
+        
+        // Show tooltip with smart positioning
+        if (tooltipRef.current) {
+          const tooltip = d3.select(tooltipRef.current);
+          
+          // Smart offset calculation
+          let offsetX, offsetY;
+          if (isCallout) {
+            // For callouts, position above and to the left to avoid overlap
+            offsetX = -120;
+            offsetY = -50;
+          } else {
+            // For regular states, position to the right and slightly up
+            offsetX = 15;
+            offsetY = -10;
+          }
+          
+          tooltip
+            .style("opacity", 1)
+            .html(generateTooltipContent(stateInfo.name, stateInfo.count))
+            .style("left", (event.pageX + offsetX) + "px")
+            .style("top", (event.pageY + offsetY) + "px");
+        }
+      })
+      .on("mousemove", function(event) {
+        if (tooltipRef.current) {
+          const tooltip = d3.select(tooltipRef.current);
+          
+          // Smart offset calculation for move events too
+          let offsetX, offsetY;
+          if (isCallout) {
+            offsetX = -120;
+            offsetY = -50;
+          } else {
+            offsetX = 15;
+            offsetY = -10;
+          }
+          
+          tooltip
+            .style("left", (event.pageX + offsetX) + "px")
+            .style("top", (event.pageY + offsetY) + "px");
+        }
+      })
+      .on("mouseout", function() {
+        const stateInfo = getStateInfo(stateId, stateCounts);
+        
+        // Don't reset color if this is the currently selected state
+        if (stateId !== selectedStateId) {
+          // Reset state color
+          const svg = d3.select(svgRef.current);
+          const statePath = svg.selectAll(".states").filter(function(d: any) { return d && d.id === stateId; });
+          statePath.transition().duration(300).ease(d3.easeCubicInOut).attr("fill", getStateColor(stateInfo.count, stateId, selectedStateId));
+          
+          // Reset callout background if this is a callout
+          if (isCallout) {
+            d3.select(this).select("rect").transition().duration(300).ease(d3.easeCubicInOut).attr("fill", stateInfo.count > 0 ? TOOLTIP_CONFIG.colors.primary : "white");
+          }
+        }
+        
+        // Hide tooltip
+        if (tooltipRef.current) {
+          d3.select(tooltipRef.current).style("opacity", 0);
+        }
+      });
+  }, [stateCounts, selectedStateId]);
+
+  // Update state colors
+  const updateStateColors = useCallback(() => {
+    if (!svgRef.current) return;
+    
+    const svg = d3.select(svgRef.current);
+    svg.selectAll(".states")
+      .attr("fill", function(d: any) {
+        if (!d || !d.id) return "#f1f5f9";
+        const stateInfo = getStateInfo(d.id, stateCounts);
+        return getStateColor(stateInfo.count, d.id, selectedStateId);
+      });
+  }, [stateCounts, selectedStateId]);
+
+  // Add customer pins
+  const addCustomerPins = useCallback((svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, projection: d3.GeoProjection) => {
+    const validCustomers = customerData.filter(d => {
+      if (d.lat === null || d.lng === null || 
+          d.lat === undefined || d.lng === undefined ||
+          isNaN(d.lat) || isNaN(d.lng)) {
+        return false;
+      }
+      
+      const projected = projection([d.lng, d.lat]);
+      return projected !== null;
+    });
+    
+    console.log(`Adding ${validCustomers.length} customer pins`);
+    
+    svg.selectAll(".customer-pin")
+      .data(validCustomers)
+      .enter().append("circle")
+      .attr("class", "customer-pin")
+      .attr("cx", d => {
+        const projected = projection([d.lng, d.lat]);
+        return projected![0];
+      })
+      .attr("cy", d => {
+        const projected = projection([d.lng, d.lat]);
+        return projected![1];
+      })
+      .attr("r", 3)
+      .attr("fill", "#ffffff")
+      .attr("stroke", "#000000")
+      .attr("stroke-width", 1)
+      .style("opacity", 1)
+      .style("pointer-events", "none")
+      .style("z-index", 1000);
+  }, [customerData]);
+
+  // Draw callouts for small East Coast states
+  const drawCallouts = useCallback((svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, states: any[], projection: d3.GeoProjection, path: d3.GeoPath) => {
+    const calloutsGroup = svg.append("g").attr("class", "callouts");
+    
+    SMALL_STATES_CONFIG.forEach(config => {
+      const stateFeature = states.find(d => d.id === config.id);
+      if (!stateFeature) return;
+      
+      const centroid = path.centroid(stateFeature);
+      if (!centroid || isNaN(centroid[0]) || isNaN(centroid[1])) return;
+      
+      const labelX = centroid[0] + config.labelOffset.x;
+      const labelY = centroid[1] + config.labelOffset.y;
+      
+      // Draw leader line
+      calloutsGroup.append("line")
+        .attr("class", "leader-line")
+        .attr("x1", centroid[0])
+        .attr("y1", centroid[1])
+        .attr("x2", labelX)
+        .attr("y2", labelY)
+        .attr("stroke", "#666")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "2,2");
+      
+      // Draw label
+      const labelGroup = calloutsGroup.append("g")
+        .attr("class", "callout-label")
+        .attr("data-state-id", config.id);
+      
+      const labelText = labelGroup.append("text")
+        .attr("x", labelX)
+        .attr("y", labelY)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "central")
+        .attr("font-size", "12px")
+        .attr("font-weight", "800")
+        .attr("pointer-events", "all")
+        .style("cursor", "pointer")
+        .attr("fill", () => {
+          const stateInfo = getStateInfo(config.id, stateCounts);
+          return stateInfo.count > 0 ? "white" : "#374151";
+        })
+        .text(config.abbrev);
+      
+      // Add background rectangle
+      const bbox = (labelText.node() as SVGTextElement).getBBox();
+      const padding = 4;
+      
+      labelGroup.insert("rect", "text")
+        .attr("x", bbox.x - padding)
+        .attr("y", bbox.y - padding)
+        .attr("width", bbox.width + 2 * padding)
+        .attr("height", bbox.height + 2 * padding)
+        .attr("rx", 3)
+        .attr("fill", () => {
+          const stateInfo = getStateInfo(config.id, stateCounts);
+          return stateInfo.count > 0 ? TOOLTIP_CONFIG.colors.primary : "white";
+        })
+        .attr("stroke", "#ccc")
+        .attr("stroke-width", 1)
+        .attr("pointer-events", "all")
+        .style("cursor", "pointer");
+      
+      // Add hover and click events
+      createHoverBehavior(labelGroup, config.id, true);
+      
+      labelGroup.on("click", function() {
+        const stateInfo = getStateInfo(config.id, stateCounts);
+        onStateSelect(stateInfo);
+      });
+    });
+  }, [createHoverBehavior, stateCounts, onStateSelect]);
+
+  // Initialize map
+  useEffect(() => {
+    if (!svgRef.current || isMapLoaded || !isMounted) return;
+
+    const svg = d3.select(svgRef.current);
+    svg.selectAll("*").remove(); // Clear previous content
+
+    const projection = d3.geoAlbersUsa()
+      .scale(1000)
+      .translate([MAP_DIMENSIONS.width / 2, MAP_DIMENSIONS.height / 2]);
+
+    const path = d3.geoPath().projection(projection);
+
+    // Load US map data
+    d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then((us: any) => {
+      const statesFeature = topojson.feature(us, us.objects.states) as any;
+      const states = statesFeature.features;
+      
+      // Draw states
+      svg.append("g")
+        .attr("class", "states")
+        .selectAll("path")
+        .data(states)
+        .enter().append("path")
+        .attr("d", (d: any) => path(d))
+        .attr("class", "states")
+        .attr("fill", "#f1f5f9")
+        .attr("stroke", "#e5e7eb")
+        .attr("stroke-width", 0.8)
+        .style("cursor", "pointer")
+        .each(function(d: any) {
+          createHoverBehavior(d3.select(this), d.id, false);
+        })
+        .on("click", function(event, d: any) {
+          const stateInfo = getStateInfo(d.id, stateCounts);
+          onStateSelect(stateInfo);
+        });
+      
+      // Draw state borders
+      svg.append("path")
+        .datum(topojson.mesh(us, us.objects.states, (a: any, b: any) => a !== b))
+        .attr("class", "state-borders")
+        .attr("d", (d: any) => path(d))
+        .attr("fill", "none")
+        .attr("stroke", "#9ca3af")
+        .attr("stroke-width", 0.5)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .style("pointer-events", "none");
+      
+      // Draw callouts
+      drawCallouts(svg, states, projection, path);
+      
+      // Add customer pins (render last to appear on top)
+      addCustomerPins(svg, projection);
+      
+      setIsMapLoaded(true);
+    });
+  }, [createHoverBehavior, drawCallouts, addCustomerPins, stateCounts, onStateSelect, isMapLoaded, isMounted]);
+
+  // Update colors when state counts or selection changes
+  useEffect(() => {
+    if (isMapLoaded) {
+      updateStateColors();
+    }
+  }, [stateCounts, selectedStateId, updateStateColors, isMapLoaded]);
+
+  return (
+    <div className="relative w-full h-full flex justify-center items-center">
+      <svg
+        ref={svgRef}
+        width={MAP_DIMENSIONS.width}
+        height={MAP_DIMENSIONS.height}
+        viewBox={`0 0 ${MAP_DIMENSIONS.width} ${MAP_DIMENSIONS.height}`}
+        className="w-full h-auto max-w-full max-h-full transition-all duration-400"
+      />
+      <div
+        ref={tooltipRef}
+        className="absolute bg-black/80 text-white px-3 py-2 rounded text-sm pointer-events-none opacity-0 transition-opacity duration-200 z-50 whitespace-pre-line"
+        style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
+      />
+    </div>
+  );
+}
