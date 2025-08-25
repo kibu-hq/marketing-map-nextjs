@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${asap.variable} font-[family-name:var(--font-asap)] antialiased`}>
         {children}
       </body>
