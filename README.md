@@ -12,11 +12,3 @@ An interactive map displaying Kibu customer locations across the United States. 
 ## Data
 
 Customer location data is stored in `public/data/map.json` and updates periodically via automation inside of a Kibu n8n workflow called "Customer States JSON File".
-
-## Development
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view the map.
