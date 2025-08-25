@@ -2,6 +2,8 @@
 
 An interactive map displaying Kibu customer locations across the United States. Built with Next.js, D3.js, and Shadcn/ui components.
 
+![map preview](<preview.png>)
+
 ## Features
 
 - Interactive US map with customer location pins

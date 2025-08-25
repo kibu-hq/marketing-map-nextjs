@@ -55,7 +55,7 @@ export default function Home() {
     <div className="w-full h-screen bg-white overflow-hidden font-[family-name:var(--font-asap)]">
       <div 
         className={`w-full h-full transition-all duration-400 ease-out ${
-          isPanelOpen ? 'lg:pr-[350px] scale-110' : ''
+          isPanelOpen ? 'lg:pr-[320px]' : ''
         }`}
       >
         <InteractiveMap
