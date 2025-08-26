@@ -26,9 +26,9 @@ export function getCustomerStoriesForState(stateName: string, contentData: Conte
   if (!stateAbbrev) return [];
   
   // Get customer stories for this state
-  // Criteria: item.id is non-empty
+  // Criteria: type === "Customer Story"
   const customerStories = contentData.filter(item => 
-    (item.state || '').toUpperCase() === stateAbbrev && !!(item.id && item.id.trim().length > 0)
+    (item.state || '').toUpperCase() === stateAbbrev && item.type === "Customer Story"
   );
   
   return customerStories.map(item => ({
@@ -45,12 +45,10 @@ export function getStateResourcesForState(stateName: string, contentData: Conten
   
   if (!stateAbbrev) return [];
   
-  // State resources are items for this state where id is empty
-  const stateResources = contentData.filter(item => {
-    if ((item.state || '').toUpperCase() !== stateAbbrev) return false;
-    const isStory = !!(item.id && item.id.trim().length > 0);
-    return !isStory;
-  });
+  // State resources are items for this state with type "State Resource"
+  const stateResources = contentData.filter(item => 
+    (item.state || '').toUpperCase() === stateAbbrev && item.type === "State Resource"
+  );
   
   return stateResources.map(item => ({
     title: item.name,

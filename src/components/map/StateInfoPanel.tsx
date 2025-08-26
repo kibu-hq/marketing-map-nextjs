@@ -12,7 +12,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, ArrowUpRight } from 'lucide-react';
 
 interface StateInfoPanelProps {
   isOpen: boolean;
@@ -77,7 +77,7 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
                     href={story.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-4 bg-white/70 border border-black/6 rounded-xl p-4 transition-all duration-200 hover:bg-white/90 hover:border-blue-200 hover:-translate-y-0.5 hover:shadow-lg"
+                    className="group flex items-center gap-4 bg-white/70 border border-black/6 rounded-xl p-4 transition-all duration-200 hover:bg-white/90 hover:border-blue-200 hover:-translate-y-0.5 hover:shadow-lg"
                   >
                     <div className="flex-shrink-0">
                       <ImageWithFallback
@@ -93,8 +93,9 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
                       <h4 className="font-semibold text-gray-900 mb-1 line-clamp-2">
                         {story.title}
                       </h4>
-                      <span className="text-sm text-blue-600 font-medium">
-                        Read More →
+                      <span className="text-sm text-blue-600 font-medium flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
+                        Read More
+                        <ArrowUpRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                       </span>
                     </div>
                   </a>
@@ -117,7 +118,7 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
                     href={resource.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-4 bg-white/70 border border-black/6 rounded-xl p-4 transition-all duration-200 hover:bg-white/90 hover:border-blue-200 hover:-translate-y-0.5 hover:shadow-lg"
+                    className="group flex items-center gap-4 bg-white/70 border border-black/6 rounded-xl p-4 transition-all duration-200 hover:bg-white/90 hover:border-blue-200 hover:-translate-y-0.5 hover:shadow-lg"
                   >
                     <div className="flex-shrink-0">
                       <ImageWithFallback
@@ -133,8 +134,9 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
                       <h4 className="font-semibold text-gray-900 mb-1 line-clamp-2">
                         {resource.title}
                       </h4>
-                      <span className="text-sm text-blue-600 font-medium">
-                        Read More →
+                      <span className="text-sm text-blue-600 font-medium flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
+                        Read More
+                        <ArrowUpRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                       </span>
                     </div>
                   </a>

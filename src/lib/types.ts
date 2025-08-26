@@ -27,6 +27,7 @@ export interface ContentItem {
   state: string;
   image_url?: string;
   name: string;
+  type: string;
 }
 
 export interface StateResource {
