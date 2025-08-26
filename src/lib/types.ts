@@ -16,7 +16,7 @@ export interface StateInfo {
 
 export interface CustomerStory {
   title: string;
-  description?: string;  // Made optional since we're not using it
+  description?: string;
   url: string;
   imageUrl?: string;
 }
