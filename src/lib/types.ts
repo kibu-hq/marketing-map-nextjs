@@ -16,8 +16,23 @@ export interface StateInfo {
 
 export interface CustomerStory {
   title: string;
-  description: string;
+  description?: string;  // Made optional since we're not using it
   url: string;
+  imageUrl?: string;
+}
+
+export interface ContentItem {
+  id: string;
+  blog_url: string;
+  state: string;
+  image_url?: string;
+  name: string;
+}
+
+export interface StateResource {
+  title: string;
+  url: string;
+  imageUrl?: string;
 }
 
 export interface TooltipPosition {

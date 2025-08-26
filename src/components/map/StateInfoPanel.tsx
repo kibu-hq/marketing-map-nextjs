@@ -1,7 +1,8 @@
 'use client';
 
-import { StateInfo, CustomerData, CustomerStory } from '@/lib/types';
-import { getCustomerStoriesForState } from '@/lib/map-utils';
+import { StateInfo, ContentItem, CustomerStory, StateResource } from '@/lib/types';
+import { getCustomerStoriesForState, getStateResourcesForState } from '@/lib/map-utils';
+import ImageWithFallback from '@/components/ui/image-with-fallback';
 import {
   Sheet,
   SheetContent,
@@ -17,13 +18,14 @@ interface StateInfoPanelProps {
   isOpen: boolean;
   onClose: () => void;
   stateInfo: StateInfo | null;
-  customerData: CustomerData[];
+  contentData: ContentItem[];
 }
 
-export default function StateInfoPanel({ isOpen, onClose, stateInfo, customerData }: StateInfoPanelProps) {
+export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData }: StateInfoPanelProps) {
   if (!stateInfo) return null;
 
-  const customerStories = getCustomerStoriesForState(stateInfo.name, customerData);
+  const customerStories = getCustomerStoriesForState(stateInfo.name, contentData);
+  const stateResources = getStateResourcesForState(stateInfo.name, contentData);
 
   return (
     <Sheet open={isOpen} onOpenChange={() => {}} modal={false}>
@@ -57,6 +59,7 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, customerDat
         </SheetHeader>
 
         <div className="p-4 space-y-6">
+          {/* Customer Stories Section */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Customer Stories
@@ -64,29 +67,81 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, customerDat
             
             {customerStories.length === 0 ? (
               <div className="text-center py-6 text-gray-500 italic">
-                No customer stories available for this state yet.
+                No stories yet!
               </div>
             ) : (
               <div className="space-y-4">
-                {customerStories.map((story, index) => (
+                {customerStories.map((story) => (
                   <a
-                    key={index}
+                    key={story.url}
                     href={story.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block bg-white/70 border border-black/6 rounded-xl p-4 transition-all duration-200 hover:bg-white/90 hover:border-blue-200 hover:-translate-y-0.5 hover:shadow-lg"
+                    className="flex items-center gap-4 bg-white/70 border border-black/6 rounded-xl p-4 transition-all duration-200 hover:bg-white/90 hover:border-blue-200 hover:-translate-y-0.5 hover:shadow-lg"
                   >
-                    <h4 className="font-semibold text-gray-900 mb-2">
-                      {story.title}
-                    </h4>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {story.description}
-                    </p>
+                    <div className="flex-shrink-0">
+                      <ImageWithFallback
+                        key={story.imageUrl || 'no-image'}
+                        src={story.imageUrl}
+                        alt={story.title}
+                        width={60}
+                        height={60}
+                        className="rounded-lg"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 mb-1 line-clamp-2">
+                        {story.title}
+                      </h4>
+                      <span className="text-sm text-blue-600 font-medium">
+                        Read More →
+                      </span>
+                    </div>
                   </a>
                 ))}
               </div>
             )}
           </div>
+
+          {/* State Resources Section */}
+          {stateResources.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                {stateInfo.name} Resources
+              </h3>
+              
+              <div className="space-y-4">
+                {stateResources.map((resource) => (
+                  <a
+                    key={resource.url}
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 bg-white/70 border border-black/6 rounded-xl p-4 transition-all duration-200 hover:bg-white/90 hover:border-blue-200 hover:-translate-y-0.5 hover:shadow-lg"
+                  >
+                    <div className="flex-shrink-0">
+                      <ImageWithFallback
+                        key={resource.imageUrl || 'no-image'}
+                        src={resource.imageUrl}
+                        alt={resource.title}
+                        width={60}
+                        height={60}
+                        className="rounded-lg"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 mb-1 line-clamp-2">
+                        {resource.title}
+                      </h4>
+                      <span className="text-sm text-blue-600 font-medium">
+                        Read More →
+                      </span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

@@ -3,27 +3,35 @@
 import { useState, useEffect } from 'react';
 import InteractiveMap from '@/components/map/InteractiveMap';
 import StateInfoPanel from '@/components/map/StateInfoPanel';
-import { CustomerData, StateInfo } from '@/lib/types';
+import { CustomerData, ContentItem, StateInfo } from '@/lib/types';
 
 export default function Home() {
   const [customerData, setCustomerData] = useState<CustomerData[]>([]);
+  const [contentData, setContentData] = useState<ContentItem[]>([]);
   const [selectedState, setSelectedState] = useState<StateInfo | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load customer data
+  // Load customer and content data
   useEffect(() => {
     const loadData = async () => {
       try {
-        const response = await fetch('/data/map.json');
-        const data: CustomerData[] = await response.json();
-        setCustomerData(data);
+        // Load map data (lat/lng coordinates)
+        const mapResponse = await fetch('/data/map.json');
+        const mapData: CustomerData[] = await mapResponse.json();
+        setCustomerData(mapData);
+        
+        // Load content data (blog articles and customer stories)
+        const contentResponse = await fetch('/data/content.json');
+        const contentData: ContentItem[] = await contentResponse.json();
+        setContentData(contentData);
         
         // Log summary statistics
-        const stateSet = new Set(data.map(customer => customer.state).filter(Boolean));
-        console.log(`Map loaded: ${stateSet.size} states with customers, ${data.length} total customers`);
+        const stateSet = new Set(mapData.map(customer => customer.state).filter(Boolean));
+        console.log(`Map loaded: ${stateSet.size} states with customers, ${mapData.length} total customers`);
+        console.log(`Content loaded: ${contentData.length} articles and stories`);
       } catch (error) {
-        console.error('Error loading customer data:', error);
+        console.error('Error loading data:', error);
       } finally {
         setIsLoading(false);
       }
@@ -69,7 +77,7 @@ export default function Home() {
         isOpen={isPanelOpen}
         onClose={handlePanelClose}
         stateInfo={selectedState}
-        customerData={customerData}
+        contentData={contentData}
       />
     </div>
   );

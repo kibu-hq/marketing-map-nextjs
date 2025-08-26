@@ -1,4 +1,4 @@
-import { CustomerData, StateInfo, CustomerStory, StateCounts } from './types';
+import { CustomerData, StateInfo, CustomerStory, StateResource, ContentItem, StateCounts } from './types';
 import { STATE_NAMES, STATE_ABBREV_TO_NAME, STATE_EMOJIS } from './constants';
 
 export function getStateInfo(stateId: string, stateCounts: StateCounts): StateInfo {
@@ -18,34 +18,45 @@ export function getStateInfo(stateId: string, stateCounts: StateCounts): StateIn
   };
 }
 
-export function getCustomerStoriesForState(stateName: string, customerData: CustomerData[]): CustomerStory[] {
+export function getCustomerStoriesForState(stateName: string, contentData: ContentItem[]): CustomerStory[] {
   const stateAbbrev = Object.keys(STATE_ABBREV_TO_NAME).find(key => 
     STATE_ABBREV_TO_NAME[key] === stateName
   );
   
   if (!stateAbbrev) return [];
   
-  // Get customers with blog URLs for this state
-  const customersWithBlogs = customerData.filter(customer => 
-    customer.state === stateAbbrev && customer.blog_url
+  // Get customer stories for this state
+  // Criteria: item.id is non-empty
+  const customerStories = contentData.filter(item => 
+    (item.state || '').toUpperCase() === stateAbbrev && !!(item.id && item.id.trim().length > 0)
   );
   
-  // Extract blog titles from URLs and create story objects
-  return customersWithBlogs.map(customer => {
-    const urlParts = customer.blog_url!.split('/');
-    const slug = urlParts[urlParts.length - 1];
-    const title = slug.replace(/-/g, ' ')
-      .replace(/customer stories /i, '')
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-    
-    return {
-      title: title,
-      description: "Read about how this organization uses Kibu.",
-      url: customer.blog_url!
-    };
+  return customerStories.map(item => ({
+    title: item.name,
+    url: item.blog_url,
+    imageUrl: item.image_url
+  }));
+}
+
+export function getStateResourcesForState(stateName: string, contentData: ContentItem[]): StateResource[] {
+  const stateAbbrev = Object.keys(STATE_ABBREV_TO_NAME).find(key => 
+    STATE_ABBREV_TO_NAME[key] === stateName
+  );
+  
+  if (!stateAbbrev) return [];
+  
+  // State resources are items for this state where id is empty
+  const stateResources = contentData.filter(item => {
+    if ((item.state || '').toUpperCase() !== stateAbbrev) return false;
+    const isStory = !!(item.id && item.id.trim().length > 0);
+    return !isStory;
   });
+  
+  return stateResources.map(item => ({
+    title: item.name,
+    url: item.blog_url,
+    imageUrl: item.image_url
+  }));
 }
 
 export function calculateStateCounts(customerData: CustomerData[]): StateCounts {
