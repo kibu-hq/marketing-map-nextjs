@@ -1,6 +1,6 @@
 'use client';
 
-import { StateInfo, ContentItem, CustomerStory, StateResource } from '@/lib/types';
+import { StateInfo, ContentItem } from '@/lib/types';
 import { getCustomerStoriesForState, getStateResourcesForState } from '@/lib/map-utils';
 import ImageWithFallback from '@/components/ui/image-with-fallback';
 import {
@@ -8,7 +8,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
   SheetDescription,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';

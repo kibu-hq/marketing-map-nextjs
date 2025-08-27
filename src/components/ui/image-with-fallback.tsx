@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 
 interface ImageWithFallbackProps {
@@ -24,7 +24,7 @@ export default function ImageWithFallback({
   const [hasError, setHasError] = useState(false);
   const [attemptIndex, setAttemptIndex] = useState(0);
 
-  const buildCandidates = (u?: string) => {
+  const buildCandidates = useCallback((u?: string) => {
     if (!u) return [fallbackSrc];
     try {
       const url = new URL(u);
@@ -48,7 +48,7 @@ export default function ImageWithFallback({
     } catch {
       return [u, fallbackSrc];
     }
-  };
+  }, [fallbackSrc]);
 
   const [candidates, setCandidates] = useState<string[]>(buildCandidates(src));
 
@@ -59,7 +59,7 @@ export default function ImageWithFallback({
     setAttemptIndex(0);
     setImgSrc(c[0] || fallbackSrc);
     setHasError(false);
-  }, [src, fallbackSrc]);
+  }, [src, fallbackSrc, buildCandidates]);
 
   const handleError = () => {
     try { console.warn('Image failed to load, attempting fallback:', imgSrc); } catch {}

@@ -71,3 +71,11 @@ export interface SmallStateConfig {
     y: number;
   };
 }
+
+// Simplified types for D3 and GeoJSON data
+export interface StateFeature {
+  id: string;
+  properties?: Record<string, unknown>;
+  geometry?: unknown;
+  type?: string;
+}
