@@ -29,10 +29,17 @@ export default function ImageWithFallback({
     try {
       const url = new URL(u);
       const pathname = url.pathname;
+      
       // If this looks like a signed S3 URL, do NOT alter the extension; the signature will break.
       if (url.search && /X-Amz-/i.test(url.search)) {
         return [u, fallbackSrc];
       }
+      
+      // If this is a Framer URL, don't modify it as it's dynamically generated
+      if (url.hostname.includes('framerusercontent.com') || url.hostname.includes('framer.com')) {
+        return [u, fallbackSrc];
+      }
+      
       const candidates: string[] = [u];
       const addWithExt = (ext: string) => {
         if (pathname.includes('.')) {
