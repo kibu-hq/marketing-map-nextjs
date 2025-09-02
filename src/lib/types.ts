@@ -62,6 +62,13 @@ export interface StateCounts {
   [stateAbbrev: string]: number;
 }
 
+export interface TeamMember {
+  name: string;
+  image: string;
+  demo_link: string;
+  states: string[];
+}
+
 export interface SmallStateConfig {
   id: string;
   abbrev: string;

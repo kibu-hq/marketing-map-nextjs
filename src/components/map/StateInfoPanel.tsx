@@ -1,8 +1,9 @@
 'use client';
 
-import { StateInfo, ContentItem } from '@/lib/types';
-import { getCustomerStoriesForState, getStateResourcesForState } from '@/lib/map-utils';
+import { StateInfo, ContentItem, TeamMember } from '@/lib/types';
+import { getCustomerStoriesForState, getStateResourcesForState, getAccountExecutiveForState } from '@/lib/map-utils';
 import ImageWithFallback from '@/components/ui/image-with-fallback';
+import AvatarPlaceholder from '@/components/ui/avatar-placeholder';
 import {
   Sheet,
   SheetContent,
@@ -12,6 +13,7 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { X, ArrowUpRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface StateInfoPanelProps {
   isOpen: boolean;
@@ -21,14 +23,25 @@ interface StateInfoPanelProps {
 }
 
 export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData }: StateInfoPanelProps) {
+  const [teamData, setTeamData] = useState<TeamMember[]>([]);
+
+  useEffect(() => {
+    // Load team data
+    fetch('/data/team.json')
+      .then(response => response.json())
+      .then(data => setTeamData(data))
+      .catch(error => console.error('Error loading team data:', error));
+  }, []);
+
   if (!stateInfo) return null;
 
   const customerStories = getCustomerStoriesForState(stateInfo.name, contentData);
   const stateResources = getStateResourcesForState(stateInfo.name, contentData);
+  const accountExecutive = getAccountExecutiveForState(stateInfo.name, teamData);
 
   return (
     <Sheet open={isOpen} onOpenChange={() => {}} modal={false}>
-      <SheetContent className="w-[400px] sm:w-[400px] md:w-[400px] lg:w-[400px] h-full overflow-y-auto bg-white border-l border-gray-200 shadow-2xl data-[state=open]:slide-in-from-right-0 data-[state=closed]:slide-out-to-right-0 [&>button]:hidden">
+      <SheetContent className="w-[400px] sm:w-[400px] md:w-[400px] lg:w-[400px] h-full bg-white border-l border-gray-200 shadow-2xl data-[state=open]:slide-in-from-right-0 data-[state=closed]:slide-out-to-right-0 [&>button]:hidden flex flex-col">
         <SheetHeader className="pb-6 border-b border-black/8 bg-gradient-to-br from-blue-500/5 to-white/10 p-6 pt-8">
           <div className="flex items-center justify-between">
             <SheetTitle className="text-2xl font-bold text-gray-900 flex items-center gap-3">
@@ -57,93 +70,136 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
           </div>
         </SheetHeader>
 
-        <div className="p-4 space-y-6">
-          {/* Customer Stories Section */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Customer Stories
-            </h3>
-            
-            {customerStories.length === 0 ? (
-              <div className="text-center py-6 text-gray-500 italic">
-                No stories yet!
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {customerStories.map((story) => (
-                  <a
-                    key={story.url}
-                    href={story.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex items-center gap-4 bg-white/70 border border-black/6 rounded-xl p-4 transition-all duration-200 hover:bg-white/90 hover:border-blue-200 hover:-translate-y-0.5 hover:shadow-lg"
-                  >
-                    <div className="flex-shrink-0">
-                      <ImageWithFallback
-                        key={story.imageUrl || 'no-image'}
-                        src={story.imageUrl}
-                        alt={story.title}
-                        width={60}
-                        height={60}
-                        className="rounded-lg"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-900 mb-1 line-clamp-2">
-                        {story.title}
-                      </h4>
-                      <span className="text-sm text-blue-600 font-medium flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
-                        Read More
-                        <ArrowUpRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                      </span>
-                    </div>
-                  </a>
-                ))}
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 space-y-6 pb-32">
+            {/* Customer Stories Section */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Customer Stories
+              </h3>
+              
+              {customerStories.length === 0 ? (
+                <div className="text-center py-6 text-gray-500 italic">
+                  No stories yet!
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {customerStories.map((story) => (
+                    <a
+                      key={story.url}
+                      href={story.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-4 bg-white/70 border border-black/6 rounded-xl p-4 transition-all duration-200 hover:bg-white/90 hover:border-blue-200 hover:-translate-y-0.5 hover:shadow-lg"
+                    >
+                      <div className="flex-shrink-0">
+                        <ImageWithFallback
+                          key={story.imageUrl || 'no-image'}
+                          src={story.imageUrl}
+                          alt={story.title}
+                          width={60}
+                          height={60}
+                          className="rounded-lg"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-gray-900 mb-1 line-clamp-2">
+                          {story.title}
+                        </h4>
+                        <span className="text-sm text-blue-600 font-medium flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
+                          Read More
+                          <ArrowUpRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                        </span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* State Resources Section */}
+            {stateResources.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  {stateInfo.name} Resources
+                </h3>
+                
+                <div className="space-y-4">
+                  {stateResources.map((resource) => (
+                    <a
+                      key={resource.url}
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-4 bg-white/70 border border-black/6 rounded-xl p-4 transition-all duration-200 hover:bg-white/90 hover:border-blue-200 hover:-translate-y-0.5 hover:shadow-lg"
+                    >
+                      <div className="flex-shrink-0">
+                        <ImageWithFallback
+                          key={resource.imageUrl || 'no-image'}
+                          src={resource.imageUrl}
+                          alt={resource.title}
+                          width={60}
+                          height={60}
+                          className="rounded-lg"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-gray-900 mb-1 line-clamp-2">
+                          {resource.title}
+                        </h4>
+                        <span className="text-sm text-blue-600 font-medium flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
+                          Read More
+                          <ArrowUpRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                        </span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
           </div>
-
-          {/* State Resources Section */}
-          {stateResources.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                {stateInfo.name} Resources
-              </h3>
-              
-              <div className="space-y-4">
-                {stateResources.map((resource) => (
-                  <a
-                    key={resource.url}
-                    href={resource.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex items-center gap-4 bg-white/70 border border-black/6 rounded-xl p-4 transition-all duration-200 hover:bg-white/90 hover:border-blue-200 hover:-translate-y-0.5 hover:shadow-lg"
-                  >
-                    <div className="flex-shrink-0">
-                      <ImageWithFallback
-                        key={resource.imageUrl || 'no-image'}
-                        src={resource.imageUrl}
-                        alt={resource.title}
-                        width={60}
-                        height={60}
-                        className="rounded-lg"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-900 mb-1 line-clamp-2">
-                        {resource.title}
-                      </h4>
-                      <span className="text-sm text-blue-600 font-medium flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
-                        Read More
-                        <ArrowUpRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                      </span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Sticky Call-to-Action at Bottom */}
+        {accountExecutive && (
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-white/80 backdrop-blur-sm border-t border-gray-200 p-4">
+            <a
+              href={accountExecutive.demo_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              <div className="flex-shrink-0">
+                {accountExecutive.image && accountExecutive.image.trim() !== '' ? (
+                  <ImageWithFallback
+                    src={`/data/images/${accountExecutive.image}`}
+                    alt={accountExecutive.name}
+                    width={48}
+                    height={48}
+                    className="rounded-full border-2 border-white/20"
+                  />
+                ) : (
+                  <AvatarPlaceholder
+                    name={accountExecutive.name}
+                    width={48}
+                    height={48}
+                    className="rounded-full border-2 border-white/20"
+                  />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-white mb-1">
+                  Talk to {accountExecutive.name.split(' ')[0]} today
+                </div>
+                <div className="text-sm text-blue-100">
+                  Book a personalized demo
+                </div>
+              </div>
+              <ArrowUpRight className="w-5 h-5 text-white/80 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </a>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );

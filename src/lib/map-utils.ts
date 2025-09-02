@@ -1,4 +1,4 @@
-import { CustomerData, StateInfo, CustomerStory, StateResource, ContentItem, StateCounts } from './types';
+import { CustomerData, StateInfo, CustomerStory, StateResource, ContentItem, StateCounts, TeamMember } from './types';
 import { STATE_NAMES, STATE_ABBREV_TO_NAME, STATE_EMOJIS } from './constants';
 
 export function getStateInfo(stateId: string, stateCounts: StateCounts): StateInfo {
@@ -84,4 +84,16 @@ export function getStateColor(count: number, stateId: string | null, selectedSta
 
 export function generateTooltipContent(stateName: string, count: number): string {
   return `${stateName}\n${count} customer${count !== 1 ? 's' : ''}`;
+}
+
+export function getAccountExecutiveForState(stateName: string, teamData: TeamMember[]): TeamMember | null {
+  const stateAbbrev = Object.keys(STATE_ABBREV_TO_NAME).find(key => 
+    STATE_ABBREV_TO_NAME[key] === stateName
+  );
+  
+  if (!stateAbbrev) return null;
+  
+  return teamData.find(member => 
+    member.states.includes(stateAbbrev)
+  ) || null;
 }
