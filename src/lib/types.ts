@@ -69,6 +69,11 @@ export interface TeamMember {
   states: string[];
 }
 
+export interface MapDataResponse {
+  note: string;
+  coordinates: CustomerData[];
+}
+
 export interface SmallStateConfig {
   id: string;
   abbrev: string;

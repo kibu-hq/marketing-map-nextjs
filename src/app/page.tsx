@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import InteractiveMap from '@/components/map/InteractiveMap';
 import StateInfoPanel from '@/components/map/StateInfoPanel';
-import { CustomerData, ContentItem, StateInfo } from '@/lib/types';
+import { CustomerData, ContentItem, StateInfo, MapDataResponse } from '@/lib/types';
 
 export default function Home() {
   const [customerData, setCustomerData] = useState<CustomerData[]>([]);
@@ -18,7 +18,8 @@ export default function Home() {
       try {
         // Load map data (lat/lng coordinates)
         const mapResponse = await fetch('/data/map.json');
-        const mapData: CustomerData[] = await mapResponse.json();
+        const mapJson: MapDataResponse[] = await mapResponse.json();
+        const mapData: CustomerData[] = mapJson[0]?.coordinates || [];
         setCustomerData(mapData);
         
         // Load content data (blog articles and customer stories)
