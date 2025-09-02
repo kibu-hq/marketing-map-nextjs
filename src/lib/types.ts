@@ -91,3 +91,12 @@ export interface StateFeature {
   geometry?: unknown;
   type?: string;
 }
+
+export interface LoveItem {
+  name: string;
+  title: string;
+  organization: string;
+  image: string | null;
+  quote: string;
+  state: string;
+}

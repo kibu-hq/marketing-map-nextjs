@@ -1,4 +1,4 @@
-import { CustomerData, StateInfo, CustomerStory, StateResource, ContentItem, StateCounts, TeamMember } from './types';
+import { CustomerData, StateInfo, CustomerStory, StateResource, ContentItem, StateCounts, TeamMember, LoveItem } from './types';
 import { STATE_NAMES, STATE_ABBREV_TO_NAME, STATE_EMOJIS } from './constants';
 
 export function getStateInfo(stateId: string, stateCounts: StateCounts): StateInfo {
@@ -96,4 +96,14 @@ export function getAccountExecutiveForState(stateName: string, teamData: TeamMem
   return teamData.find(member => 
     member.states.includes(stateAbbrev)
   ) || null;
+}
+
+export function getLoveForState(stateName: string, loveData: LoveItem[]): LoveItem[] {
+  const stateAbbrev = Object.keys(STATE_ABBREV_TO_NAME).find(key => 
+    STATE_ABBREV_TO_NAME[key] === stateName
+  );
+
+  if (!stateAbbrev) return [];
+
+  return loveData.filter(item => (item.state || '').toUpperCase() === stateAbbrev);
 }

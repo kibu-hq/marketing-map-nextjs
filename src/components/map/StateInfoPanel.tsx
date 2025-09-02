@@ -1,9 +1,9 @@
 'use client';
 
-import { StateInfo, ContentItem, TeamMember } from '@/lib/types';
-import { getCustomerStoriesForState, getStateResourcesForState, getAccountExecutiveForState } from '@/lib/map-utils';
+import { StateInfo, ContentItem, TeamMember, LoveItem } from '@/lib/types';
+import { getCustomerStoriesForState, getStateResourcesForState, getAccountExecutiveForState, getLoveForState } from '@/lib/map-utils';
 import ImageWithFallback from '@/components/ui/image-with-fallback';
-import AvatarPlaceholder from '@/components/ui/avatar-placeholder';
+import OrgLogoPlaceholder from '@/components/ui/org-logo-placeholder';
 import {
   Sheet,
   SheetContent,
@@ -12,8 +12,14 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { X, ArrowUpRight } from 'lucide-react';
+import { X, ArrowUpRight, Megaphone } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface StateInfoPanelProps {
   isOpen: boolean;
@@ -24,6 +30,7 @@ interface StateInfoPanelProps {
 
 export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData }: StateInfoPanelProps) {
   const [teamData, setTeamData] = useState<TeamMember[]>([]);
+  const [loveData, setLoveData] = useState<LoveItem[]>([]);
 
   useEffect(() => {
     // Load team data
@@ -31,6 +38,12 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
       .then(response => response.json())
       .then(data => setTeamData(data))
       .catch(error => console.error('Error loading team data:', error));
+
+    // Load love data
+    fetch('/data/love.json')
+      .then(response => response.json())
+      .then(data => setLoveData(data))
+      .catch(error => console.error('Error loading love data:', error));
   }, []);
 
   if (!stateInfo) return null;
@@ -38,6 +51,7 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
   const customerStories = getCustomerStoriesForState(stateInfo.name, contentData);
   const stateResources = getStateResourcesForState(stateInfo.name, contentData);
   const accountExecutive = getAccountExecutiveForState(stateInfo.name, teamData);
+  const loveForState = getLoveForState(stateInfo.name, loveData);
 
   // Check if this state has zero customers
   const hasNoCustomers = stateInfo.count === 0;
@@ -89,17 +103,10 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
               {accountExecutive && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-center">
-                    {accountExecutive.image && accountExecutive.image.trim() !== '' ? (
+                    {accountExecutive.image && accountExecutive.image.trim() !== '' && (
                       <ImageWithFallback
                         src={`/data/images/${accountExecutive.image}`}
                         alt={accountExecutive.name}
-                        width={80}
-                        height={80}
-                        className="rounded-full border-4 border-blue-200"
-                      />
-                    ) : (
-                      <AvatarPlaceholder
-                        name={accountExecutive.name}
                         width={80}
                         height={80}
                         className="rounded-full border-4 border-blue-200"
@@ -137,14 +144,37 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
               <div className="p-4 space-y-6 pb-32">
                 {/* Customer Stories Section */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Customer Stories
-                  </h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Customer Stories
+                    </h3>
+                    {customerStories.length > 0 && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <a href="https://tally.so/r/wvlv8X" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-500 transition-colors">
+                              <Megaphone className="w-5 h-5" />
+                            </a>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Already use Kibu? Request a story!</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
                   
                   {customerStories.length === 0 ? (
-                    <div className="text-center py-6 text-gray-500 italic">
-                      No stories yet!
-                    </div>
+                    <a 
+                      href="https://tally.so/r/wvlv8X"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group block text-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 relative"
+                    >
+                      <h4 className="font-bold text-gray-800">Already use Kibu?</h4>
+                      <p className="text-sm text-gray-600 mt-1">Be our first story from {stateInfo.name} and get 2 months free, plus a social media shoutout!</p>
+                      <ArrowUpRight className="w-4 h-4 text-gray-400 absolute top-3 right-3 group-hover:text-blue-500 transition-colors" />
+                    </a>
                   ) : (
                     <div className="space-y-4">
                       {customerStories.map((story) => (
@@ -179,6 +209,47 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
                     </div>
                   )}
                 </div>
+
+                {/* Love Section */}
+                {loveForState.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Love from {stateInfo.name}
+                    </h3>
+                    <div className="space-y-4">
+                      {loveForState.map((love) => (
+                        <div key={love.name} className="bg-white/70 border border-black/6 rounded-xl p-3">
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0">
+                              {love.image ? (
+                                <ImageWithFallback
+                                  src={`/data/images/${love.image}`}
+                                  alt={love.organization}
+                                  width={32}
+                                  height={32}
+                                  className="rounded"
+                                />
+                              ) : (
+                                <OrgLogoPlaceholder
+                                  name={love.organization}
+                                  width={32}
+                                  height={32}
+                                  className="rounded"
+                                />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold text-gray-900 text-sm">{love.name}</div>
+                              <div className="text-xs text-gray-600">{love.title}</div>
+                              <div className="text-xs text-gray-500">{love.organization}</div>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-2 italic">{love.quote}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* State Resources Section */}
                 {stateResources.length > 0 && (
@@ -233,17 +304,10 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
                   className="group flex items-center gap-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:-translate-y-0.5 hover:shadow-lg"
                 >
                   <div className="flex-shrink-0">
-                    {accountExecutive.image && accountExecutive.image.trim() !== '' ? (
+                    {accountExecutive.image && accountExecutive.image.trim() !== '' && (
                       <ImageWithFallback
                         src={`/data/images/${accountExecutive.image}`}
                         alt={accountExecutive.name}
-                        width={48}
-                        height={48}
-                        className="rounded-full border-2 border-white/20"
-                      />
-                    ) : (
-                      <AvatarPlaceholder
-                        name={accountExecutive.name}
                         width={48}
                         height={48}
                         className="rounded-full border-2 border-white/20"
