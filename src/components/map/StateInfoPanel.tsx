@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { X, ArrowUpRight, Megaphone } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Tooltip,
   TooltipContent,
@@ -64,7 +64,13 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
     }
   }, [isOpen]);
 
-    if (!stateInfo) return null;
+  const customerStories = useMemo(() => stateInfo ? getCustomerStoriesForState(stateInfo.name, contentData) : [], [stateInfo, contentData]);
+  const stateResources = useMemo(() => stateInfo ? getStateResourcesForState(stateInfo.name, contentData) : [], [stateInfo, contentData]);
+  const accountExecutive = useMemo(() => stateInfo ? getAccountExecutiveForState(stateInfo.name, teamData) : null, [stateInfo, teamData]);
+  const loveForState = useMemo(() => stateInfo ? getLoveForState(stateInfo.name, loveData) : [], [stateInfo, loveData]);
+  const eventsForState = useMemo(() => stateInfo ? getEventsForState(stateInfo.name, eventData) : [], [stateInfo, eventData]);
+
+  if (!stateInfo) return null;
 
   const handleScheduleClick = (url: string) => {
     if ((window as any).Calendly) {
@@ -74,12 +80,6 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
     }
     return false;
   };
-
-  const customerStories = getCustomerStoriesForState(stateInfo.name, contentData);
-  const stateResources = getStateResourcesForState(stateInfo.name, contentData);
-  const accountExecutive = getAccountExecutiveForState(stateInfo.name, teamData);
-  const loveForState = getLoveForState(stateInfo.name, loveData);
-  const eventsForState = getEventsForState(stateInfo.name, eventData);
 
   // Check if this state has zero customers
   const hasNoCustomers = stateInfo.count === 0;

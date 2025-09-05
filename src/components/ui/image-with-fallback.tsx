@@ -102,7 +102,6 @@ export default function ImageWithFallback({
       width={width}
       height={height}
       sizes={`${width}px`}
-      unoptimized
       className={className}
       onError={handleError}
       style={{ objectFit: 'cover' }}
