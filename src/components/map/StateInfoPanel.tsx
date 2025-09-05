@@ -160,15 +160,10 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
               <div className="p-4 space-y-6 pb-32">
                 {/* Upcoming Events Section */}
                 {eventsForState.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Upcoming Events
-                    </h3>
-                    <div className="space-y-4">
-                      {eventsForState.map((event) => (
-                        <EventCard key={event.name} event={event} />
-                      ))}
-                    </div>
+                  <div className="space-y-4">
+                    {eventsForState.map((event) => (
+                      <EventCard key={event.name} event={event} />
+                    ))}
                   </div>
                 )}
 

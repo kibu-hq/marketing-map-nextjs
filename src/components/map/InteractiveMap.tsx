@@ -205,12 +205,33 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
         const projected = projection([parseFloat(d.longitude), parseFloat(d.latitude)]);
         return projected![1];
       })
-      .attr("r", 8) // Even larger radius to make it more visible
+      .attr("r", 6)
       .attr("fill", "#FF6600") // Brighter orange
-      .attr("stroke", "#000000")
-      .attr("stroke-width", 2)
+      .attr("stroke", "#ffffff")
+      .attr("stroke-width", 1)
       .style("opacity", 1)
       .style("pointer-events", "none");
+    
+    // Add pulsing animation using D3 transitions
+    function pulse(selection: any) {
+      selection
+        .transition()
+        .duration(1000)
+        .ease(d3.easeSinInOut)
+        .attr("r", 7)
+        .style("opacity", 0.9)
+        .transition()
+        .duration(1000)
+        .ease(d3.easeSinInOut)
+        .attr("r", 6)
+        .style("opacity", 1)
+        .on("end", function(this: SVGCircleElement) {
+          pulse(d3.select(this));
+        });
+    }
+    
+    // Start pulsing animation for all event pins
+    eventPinsGroup.selectAll(".event-pin").call(pulse);
   }, [events]);
 
   // Draw callouts for small East Coast states
