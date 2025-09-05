@@ -47,7 +47,7 @@ export default function EventCard({ event }: EventCardProps) {
         <h4 className="font-semibold text-gray-800 mb-1 line-clamp-2">
           {event.name}
         </h4>
-        <p className="text-base text-gray-700 mb-3">{
+        <p className="text-sm text-gray-700 mb-3">{
           event.description
         }</p>
         <span className="text-sm text-orange-600 font-semibold flex items-center gap-1 group-hover:gap-1.5 transition-all duration-200">
