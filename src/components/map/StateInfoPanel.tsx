@@ -46,7 +46,16 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
       .catch(error => console.error('Error loading love data:', error));
   }, []);
 
-  if (!stateInfo) return null;
+    if (!stateInfo) return null;
+
+  const handleScheduleClick = (url: string) => {
+    if ((window as any).Calendly) {
+      (window as any).Calendly.initPopupWidget({
+        url: `${url}?hide_gdpr_banner=1`,
+      });
+    }
+    return false;
+  };
 
   const customerStories = getCustomerStoriesForState(stateInfo.name, contentData);
   const stateResources = getStateResourcesForState(stateInfo.name, contentData);
@@ -114,11 +123,9 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
                     )}
                   </div>
                   
-                  <a
-                    href={accountExecutive.demo_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group block w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-6 transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:-translate-y-1 hover:shadow-xl"
+                  <div
+                    onClick={() => handleScheduleClick(accountExecutive.demo_link)}
+                    className="group block w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-6 transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:-translate-y-1 hover:shadow-xl cursor-pointer"
                   >
                     <div className="space-y-2">
                       <div className="text-xl font-bold">
@@ -131,7 +138,7 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
                         <ArrowUpRight className="w-6 h-6 text-white/80 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" />
                       </div>
                     </div>
-                  </a>
+                  </div>
                 </div>
               )}
             </div>
@@ -297,11 +304,9 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
             {/* Sticky Call-to-Action at Bottom */}
             {accountExecutive && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-white/80 backdrop-blur-sm border-t border-gray-200 p-4">
-                <a
-                  href={accountExecutive.demo_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:-translate-y-0.5 hover:shadow-lg"
+                <div
+                  onClick={() => handleScheduleClick(accountExecutive.demo_link)}
+                  className="group flex items-center gap-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"
                 >
                   <div className="flex-shrink-0">
                     {accountExecutive.image && accountExecutive.image.trim() !== '' && (
@@ -323,7 +328,7 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
                     </div>
                   </div>
                   <ArrowUpRight className="w-5 h-5 text-white/80 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
+                </div>
               </div>
             )}
           </>

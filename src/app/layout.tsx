@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Asap } from "next/font/google";
 import "./globals.css";
+import "./calendly-custom.css";
 
 const asap = Asap({
   subsets: ["latin"],
@@ -22,7 +23,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+        <html lang="en" suppressHydrationWarning>
+      <head>
+        <link
+          href="https://assets.calendly.com/assets/external/widget.css"
+          rel="stylesheet"
+        />
+        <script
+          src="https://assets.calendly.com/assets/external/widget.js"
+          type="text/javascript"
+          async
+        ></script>
+      </head>
       <body className={`${asap.variable} font-[family-name:var(--font-asap)] antialiased`}>
         {children}
       </body>

@@ -1,0 +1,7 @@
+.calendly-popup-content {
+  width: 1110px !important;
+  height: 720px !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
