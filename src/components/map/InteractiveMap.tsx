@@ -143,7 +143,7 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
   }, [stateCounts, selectedStateId]);
 
   // Add customer pins
-  const addCustomerPins = useCallback((svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, projection: d3.GeoProjection) => {
+  const addCustomerPins = useCallback((svg: d3.Selection<SVGSVGElement | SVGGElement, unknown, null, undefined>, projection: d3.GeoProjection) => {
     const validCustomers = customerData.filter(d => {
       if (d.lat === null || d.lng === null || 
           d.lat === undefined || d.lng === undefined ||
@@ -154,8 +154,6 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
       const projected = projection([d.lng, d.lat]);
       return projected !== null;
     });
-    
-    console.log(`Adding ${validCustomers.length} customer pins`);
     
     svg.selectAll(".customer-pin")
       .data(validCustomers)
@@ -179,7 +177,7 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
   }, [customerData]);
 
   // Add event pins
-  const addEventPins = useCallback((svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, projection: d3.GeoProjection) => {
+  const addEventPins = useCallback((svg: d3.Selection<SVGSVGElement | SVGGElement, unknown, null, undefined>, projection: d3.GeoProjection) => {
     const validEvents = events.filter(d => {
       const lat = parseFloat(d.latitude);
       const lon = parseFloat(d.longitude);
@@ -192,7 +190,10 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
       return projected !== null;
     });
 
-    svg.selectAll(".event-pin")
+    // Create a group for event pins to ensure proper layering
+    const eventPinsGroup = svg.append("g").attr("class", "event-pins-group");
+    
+    eventPinsGroup.selectAll(".event-pin")
       .data(validEvents)
       .enter().append("circle")
       .attr("class", "event-pin")
@@ -204,13 +205,12 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
         const projected = projection([parseFloat(d.longitude), parseFloat(d.latitude)]);
         return projected![1];
       })
-      .attr("r", 6) // Larger radius
-      .attr("fill", "#FFA500") // Bright orange
+      .attr("r", 8) // Even larger radius to make it more visible
+      .attr("fill", "#FF6600") // Brighter orange
       .attr("stroke", "#000000")
-      .attr("stroke-width", 1)
-      .style("opacity", 0.8)
-      .style("pointer-events", "none")
-      .style("z-index", 1001);
+      .attr("stroke-width", 2)
+      .style("opacity", 1)
+      .style("pointer-events", "none");
   }, [events]);
 
   // Draw callouts for small East Coast states
@@ -331,13 +331,7 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
           onStateSelect(stateInfo);
         });
       
-      // Add customer pins
-      addCustomerPins(svg, projection);
-
-      // Add event pins
-      addEventPins(svg, projection);
-      
-      // Draw state borders (render after pins so borders appear on top)
+      // Draw state borders
       svg.append("path")
         .datum(topojson.mesh(us as any, (us as any).objects.states, (a: unknown, b: unknown) => a !== b))
         .attr("class", "state-borders")
@@ -349,8 +343,17 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
         .attr("stroke-linecap", "round")
         .style("pointer-events", "none");
       
-      // Draw callouts (render last to appear on top of everything)
+      // Draw callouts
       drawCallouts(svg, states, projection, path);
+      
+      // Create a pins group to ensure all pins are above map elements
+      const pinsGroup = svg.append("g").attr("class", "all-pins-group");
+      
+      // Add customer pins to the pins group
+      addCustomerPins(pinsGroup, projection);
+
+      // Add event pins to the pins group (above customer pins)
+      addEventPins(pinsGroup, projection);
       
       setIsMapLoaded(true);
     });

@@ -115,5 +115,6 @@ export function getEventsForState(stateName: string, eventData: Event[]): Event[
 
   if (!stateAbbrev) return [];
 
+  // Use the state field directly from the event data
   return eventData.filter(item => (item.state || '').toUpperCase() === stateAbbrev);
 }
