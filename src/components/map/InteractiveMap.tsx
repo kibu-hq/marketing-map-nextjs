@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import * as topojson from 'topojson-client';
-import { CustomerData, StateInfo, StateCounts } from '@/lib/types';
+import { CustomerData, StateInfo, StateCounts, Event } from '@/lib/types';
 import { MAP_DIMENSIONS, SMALL_STATES_CONFIG, TOOLTIP_CONFIG } from '@/lib/constants';
 import { getStateInfo, calculateStateCounts, getStateColor, generateTooltipContent } from '@/lib/map-utils';
 
@@ -19,10 +19,15 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
   const [stateCounts, setStateCounts] = useState<StateCounts>({});
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
 
   // Ensure component is mounted before rendering
   useEffect(() => {
     setIsMounted(true);
+    fetch('/data/events.json')
+      .then(response => response.json())
+      .then(data => setEvents(data))
+      .catch(error => console.error('Error loading events data:', error));
   }, []);
 
   // Calculate state counts when customer data changes
@@ -173,6 +178,41 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
       .style("z-index", 1000);
   }, [customerData]);
 
+  // Add event pins
+  const addEventPins = useCallback((svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, projection: d3.GeoProjection) => {
+    const validEvents = events.filter(d => {
+      const lat = parseFloat(d.latitude);
+      const lon = parseFloat(d.longitude);
+
+      if (isNaN(lat) || isNaN(lon)) {
+        return false;
+      }
+
+      const projected = projection([lon, lat]);
+      return projected !== null;
+    });
+
+    svg.selectAll(".event-pin")
+      .data(validEvents)
+      .enter().append("circle")
+      .attr("class", "event-pin")
+      .attr("cx", d => {
+        const projected = projection([parseFloat(d.longitude), parseFloat(d.latitude)]);
+        return projected![0];
+      })
+      .attr("cy", d => {
+        const projected = projection([parseFloat(d.longitude), parseFloat(d.latitude)]);
+        return projected![1];
+      })
+      .attr("r", 6) // Larger radius
+      .attr("fill", "#FFA500") // Bright orange
+      .attr("stroke", "#000000")
+      .attr("stroke-width", 1)
+      .style("opacity", 0.8)
+      .style("pointer-events", "none")
+      .style("z-index", 1001);
+  }, [events]);
+
   // Draw callouts for small East Coast states
   const drawCallouts = useCallback((svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, states: unknown[], projection: d3.GeoProjection, path: d3.GeoPath) => {
     const calloutsGroup = svg.append("g").attr("class", "callouts");
@@ -274,7 +314,11 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
         .enter().append("path")
         .attr("d", (d: unknown) => path(d as any))
         .attr("class", "states")
-        .attr("fill", "#f1f5f9")
+        .attr("fill", function(d: unknown) {
+          if (!d || !(d as {id: string}).id) return "#f1f5f9";
+          const stateInfo = getStateInfo((d as {id: string}).id, stateCounts);
+          return getStateColor(stateInfo.count, (d as {id: string}).id, selectedStateId);
+        })
         .attr("stroke", "#e5e7eb")
         .attr("stroke-width", 0.8)
         .style("cursor", "pointer")
@@ -287,7 +331,13 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
           onStateSelect(stateInfo);
         });
       
-      // Draw state borders
+      // Add customer pins
+      addCustomerPins(svg, projection);
+
+      // Add event pins
+      addEventPins(svg, projection);
+      
+      // Draw state borders (render after pins so borders appear on top)
       svg.append("path")
         .datum(topojson.mesh(us as any, (us as any).objects.states, (a: unknown, b: unknown) => a !== b))
         .attr("class", "state-borders")
@@ -299,15 +349,12 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
         .attr("stroke-linecap", "round")
         .style("pointer-events", "none");
       
-      // Draw callouts
+      // Draw callouts (render last to appear on top of everything)
       drawCallouts(svg, states, projection, path);
-      
-      // Add customer pins (render last to appear on top)
-      addCustomerPins(svg, projection);
       
       setIsMapLoaded(true);
     });
-  }, [createHoverBehavior, drawCallouts, addCustomerPins, stateCounts, onStateSelect, isMapLoaded, isMounted]);
+  }, [createHoverBehavior, drawCallouts, addCustomerPins, addEventPins, stateCounts, onStateSelect, isMapLoaded, isMounted]);
 
   // Update colors when state counts or selection changes
   useEffect(() => {

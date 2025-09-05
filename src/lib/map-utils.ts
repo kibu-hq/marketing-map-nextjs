@@ -1,4 +1,4 @@
-import { CustomerData, StateInfo, CustomerStory, StateResource, ContentItem, StateCounts, TeamMember, LoveItem } from './types';
+import { CustomerData, StateInfo, CustomerStory, StateResource, ContentItem, StateCounts, TeamMember, LoveItem, Event } from './types';
 import { STATE_NAMES, STATE_ABBREV_TO_NAME, STATE_EMOJIS } from './constants';
 
 export function getStateInfo(stateId: string, stateCounts: StateCounts): StateInfo {
@@ -106,4 +106,14 @@ export function getLoveForState(stateName: string, loveData: LoveItem[]): LoveIt
   if (!stateAbbrev) return [];
 
   return loveData.filter(item => (item.state || '').toUpperCase() === stateAbbrev);
+}
+
+export function getEventsForState(stateName: string, eventData: Event[]): Event[] {
+  const stateAbbrev = Object.keys(STATE_ABBREV_TO_NAME).find(key => 
+    STATE_ABBREV_TO_NAME[key] === stateName
+  );
+
+  if (!stateAbbrev) return [];
+
+  return eventData.filter(item => (item.state || '').toUpperCase() === stateAbbrev);
 }

@@ -100,3 +100,15 @@ export interface LoveItem {
   quote: string;
   state: string;
 }
+
+export interface Event {
+  name: string;
+  start_date: string;
+  end_date: string;
+  latitude: string;
+  longitude: string;
+  description: string;
+  url: string;
+  image_url: string;
+  state: string;
+}

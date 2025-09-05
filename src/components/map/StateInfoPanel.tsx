@@ -1,7 +1,8 @@
 'use client';
 
-import { StateInfo, ContentItem, TeamMember, LoveItem } from '@/lib/types';
-import { getCustomerStoriesForState, getStateResourcesForState, getAccountExecutiveForState, getLoveForState } from '@/lib/map-utils';
+import { StateInfo, ContentItem, TeamMember, LoveItem, Event } from '@/lib/types';
+import { getCustomerStoriesForState, getStateResourcesForState, getAccountExecutiveForState, getLoveForState, getEventsForState } from '@/lib/map-utils';
+import EventCard from '@/components/ui/EventCard';
 import ImageWithFallback from '@/components/ui/image-with-fallback';
 import OrgLogoPlaceholder from '@/components/ui/org-logo-placeholder';
 import {
@@ -31,6 +32,7 @@ interface StateInfoPanelProps {
 export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData }: StateInfoPanelProps) {
   const [teamData, setTeamData] = useState<TeamMember[]>([]);
   const [loveData, setLoveData] = useState<LoveItem[]>([]);
+  const [eventData, setEventData] = useState<Event[]>([]);
 
   useEffect(() => {
     // Load team data
@@ -44,6 +46,12 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
       .then(response => response.json())
       .then(data => setLoveData(data))
       .catch(error => console.error('Error loading love data:', error));
+
+    // Load event data
+    fetch('/data/events.json')
+      .then(response => response.json())
+      .then(data => setEventData(data))
+      .catch(error => console.error('Error loading event data:', error));
   }, []);
 
     if (!stateInfo) return null;
@@ -61,6 +69,7 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
   const stateResources = getStateResourcesForState(stateInfo.name, contentData);
   const accountExecutive = getAccountExecutiveForState(stateInfo.name, teamData);
   const loveForState = getLoveForState(stateInfo.name, loveData);
+  const eventsForState = getEventsForState(stateInfo.name, eventData);
 
   // Check if this state has zero customers
   const hasNoCustomers = stateInfo.count === 0;
@@ -149,6 +158,20 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
             {/* Scrollable content area */}
             <div className="flex-1 overflow-y-auto">
               <div className="p-4 space-y-6 pb-32">
+                {/* Upcoming Events Section */}
+                {eventsForState.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Upcoming Events
+                    </h3>
+                    <div className="space-y-4">
+                      {eventsForState.map((event) => (
+                        <EventCard key={event.name} event={event} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Customer Stories Section */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
