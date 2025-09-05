@@ -16,6 +16,7 @@ interface InteractiveMapProps {
 export default function InteractiveMap({ customerData, onStateSelect, selectedStateId }: InteractiveMapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const projectionRef = useRef<d3.GeoProjection | null>(null);
   const [stateCounts, setStateCounts] = useState<StateCounts>({});
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -24,7 +25,7 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
   // Ensure component is mounted before rendering
   useEffect(() => {
     setIsMounted(true);
-    fetch('/data/events.json')
+    fetch(`/data/events.json?v=${new Date().getTime()}`, { cache: 'no-store' })
       .then(response => response.json())
       .then(data => setEvents(data))
       .catch(error => console.error('Error loading events data:', error));
@@ -323,6 +324,8 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
     const path = d3.geoPath().projection(projection);
 
     // Load US map data
+    projectionRef.current = projection;
+
     d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then((us: unknown) => {
       const statesFeature = topojson.feature(us as any, (us as any).objects.states) as any;
       const states = statesFeature.features;
@@ -373,12 +376,10 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
       // Add customer pins to the pins group
       addCustomerPins(pinsGroup, projection);
 
-      // Add event pins to the pins group (above customer pins)
-      addEventPins(pinsGroup, projection);
       
       setIsMapLoaded(true);
     });
-  }, [createHoverBehavior, drawCallouts, addCustomerPins, addEventPins, stateCounts, onStateSelect, isMapLoaded, isMounted]);
+  }, [createHoverBehavior, drawCallouts, addCustomerPins, stateCounts, onStateSelect, isMapLoaded, isMounted]);
 
   // Update colors when state counts or selection changes
   useEffect(() => {
@@ -386,6 +387,20 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
       updateStateColors();
     }
   }, [stateCounts, selectedStateId, updateStateColors, isMapLoaded]);
+
+  // Draw event pins when events data changes
+  useEffect(() => {
+    if (!isMapLoaded || !projectionRef.current || !svgRef.current) return;
+
+    const svg = d3.select(svgRef.current);
+    const pinsGroup = svg.select<SVGGElement>(".all-pins-group");
+
+    if (!pinsGroup.empty()) {
+      // Clear existing event pins before drawing new ones
+      pinsGroup.selectAll(".event-pins-group").remove();
+      addEventPins(pinsGroup, projectionRef.current);
+    }
+  }, [events, isMapLoaded, addEventPins]);
 
   return (
     <div className="relative w-full h-full flex justify-center items-center">

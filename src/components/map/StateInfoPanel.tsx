@@ -37,19 +37,19 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
 
   useEffect(() => {
     // Load team data
-    fetch('/data/team.json')
+    fetch(`/data/team.json?v=${new Date().getTime()}`, { cache: 'no-store' })
       .then(response => response.json())
       .then(data => setTeamData(data))
       .catch(error => console.error('Error loading team data:', error));
 
     // Load love data
-    fetch('/data/love.json')
+    fetch(`/data/love.json?v=${new Date().getTime()}`, { cache: 'no-store' })
       .then(response => response.json())
       .then(data => setLoveData(data))
       .catch(error => console.error('Error loading love data:', error));
 
     // Load event data
-    fetch('/data/events.json')
+    fetch(`/data/events.json?v=${new Date().getTime()}`, { cache: 'no-store' })
       .then(response => response.json())
       .then(data => setEventData(data))
       .catch(error => console.error('Error loading event data:', error));
