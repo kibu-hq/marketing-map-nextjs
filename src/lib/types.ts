@@ -110,5 +110,5 @@ export interface Event {
   description: string;
   url: string;
   image_url: string;
-  state: string;
+  state?: string;
 }
