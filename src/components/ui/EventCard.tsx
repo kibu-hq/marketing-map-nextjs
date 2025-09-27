@@ -2,7 +2,7 @@
 
 import { Event } from '@/lib/types';
 import ImageWithFallback from './image-with-fallback';
-import { ArrowUpRight, Calendar } from 'lucide-react';
+import { ArrowUpRight, Calendar, MapPin } from 'lucide-react';
 
 interface EventCardProps {
   event: Event;
@@ -18,6 +18,19 @@ const formatDateRange = (startDate: string, endDate?: string) => {
     return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
   }
   return start.toLocaleDateString('en-US', options);
+};
+
+const formatLocation = (city?: string, state?: string) => {
+  if (city && state) {
+    return `${city}, ${state}`;
+  }
+  if (city) {
+    return city;
+  }
+  if (state) {
+    return state;
+  }
+  return null;
 };
 
 export default function EventCard({ event }: EventCardProps) {
@@ -40,10 +53,16 @@ export default function EventCard({ event }: EventCardProps) {
         />
       </div>
       <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 text-xs text-orange-600 font-medium mb-2">
+        <div className="flex items-center gap-2 text-xs text-orange-600 font-medium mb-2">
           <Calendar className="w-3.5 h-3.5" />
           <span>{formatDateRange(event.start_date, event.end_date)}</span>
         </div>
+        {formatLocation(event.city, event.state) && (
+          <div className="flex items-center gap-2 text-xs text-gray-600 font-medium mb-2">
+            <MapPin className="w-3.5 h-3.5" />
+            <span>{formatLocation(event.city, event.state)}</span>
+          </div>
+        )}
         <h4 className="font-semibold text-gray-800 mb-1 line-clamp-2">
           {event.name}
         </h4>

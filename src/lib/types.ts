@@ -111,4 +111,5 @@ export interface Event {
   url: string;
   image_url: string;
   state?: string;
+  city?: string;
 }
