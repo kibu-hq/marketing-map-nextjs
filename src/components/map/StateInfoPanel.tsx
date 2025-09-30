@@ -118,50 +118,66 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
         {isReady ? (
           hasNoCustomers ? (
             /* Zero Customers - Full Page Call to Action */
-            <div className="flex-1 flex flex-col p-8 text-center">
-              <div className="max-w-xs mx-auto space-y-8 mt-8">
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Help us fill up America! 🇺🇸
-                  </h2>
-                  <p className="text-lg text-gray-700">
-                    Be our first customer in <span className="font-semibold text-blue-600">{stateInfo.name}</span> and get <span className="font-bold text-green-600">50% off</span> your first 6 months.
-                  </p>
-                </div>
-                
-                {accountExecutive && (
+            <div className="flex-1 flex flex-col overflow-y-auto">
+              <div className="p-8 text-center">
+                <div className="max-w-xs mx-auto space-y-8 mt-8">
                   <div className="space-y-4">
-                    <div className="flex items-center justify-center">
-                      {accountExecutive.image && accountExecutive.image.trim() !== '' && (
-                        <ImageWithFallback
-                          src={`/data/images/${accountExecutive.image}`}
-                          alt={accountExecutive.name}
-                          width={80}
-                          height={80}
-                          className="rounded-full border-4 border-blue-200"
-                        />
-                      )}
-                    </div>
-                    
-                    <div
-                      onClick={() => handleScheduleClick(accountExecutive.demo_link)}
-                      className="group block w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-6 transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:-translate-y-1 hover:shadow-xl cursor-pointer"
-                    >
-                      <div className="space-y-2">
-                        <div className="text-xl font-bold">
-                          Talk to {accountExecutive.name.split(' ')[0]} today
-                        </div>
-                        <div className="text-blue-100">
-                          Book your demo and claim your 50% discount
-                        </div>
-                        <div className="flex items-center justify-center mt-3">
-                          <ArrowUpRight className="w-6 h-6 text-white/80 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Help us fill up America! 🇺🇸
+                    </h2>
+                    <p className="text-lg text-gray-700">
+                      Be our first customer in <span className="font-semibold text-blue-600">{stateInfo.name}</span> and get <span className="font-bold text-green-600">50% off</span> your first 6 months.
+                    </p>
+                  </div>
+                  
+                  {accountExecutive && (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-center">
+                        {accountExecutive.image && accountExecutive.image.trim() !== '' && (
+                          <ImageWithFallback
+                            src={`/data/images/${accountExecutive.image}`}
+                            alt={accountExecutive.name}
+                            width={80}
+                            height={80}
+                            className="rounded-full border-4 border-blue-200"
+                          />
+                        )}
+                      </div>
+                      
+                      <div
+                        onClick={() => handleScheduleClick(accountExecutive.demo_link)}
+                        className="group block w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-6 transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:-translate-y-1 hover:shadow-xl cursor-pointer"
+                      >
+                        <div className="space-y-2">
+                          <div className="text-xl font-bold">
+                            Talk to {accountExecutive.name.split(' ')[0]} today
+                          </div>
+                          <div className="text-blue-100">
+                            Book your demo and claim your 50% discount
+                          </div>
+                          <div className="flex items-center justify-center mt-3">
+                            <ArrowUpRight className="w-6 h-6 text-white/80 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
+
+              {/* Upcoming Events Section for states with no customers */}
+              {eventsForState.length > 0 && (
+                <div className="px-8 pb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 text-left">
+                    Upcoming Events
+                  </h3>
+                  <div className="space-y-4">
+                    {eventsForState.map((event) => (
+                      <EventCard key={event.name} event={event} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             /* Normal State with Customers */
