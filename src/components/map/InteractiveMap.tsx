@@ -187,6 +187,14 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
         return false;
       }
 
+      // Filter out past events
+      const endDate = new Date(d.end_date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+      if (endDate < today) {
+        return false;
+      }
+
       const projected = projection([lon, lat]);
       return projected !== null;
     });
