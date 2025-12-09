@@ -387,7 +387,7 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
       
       setIsMapLoaded(true);
     });
-  }, [createHoverBehavior, drawCallouts, addCustomerPins, stateCounts, onStateSelect, isMapLoaded, isMounted]);
+  }, [createHoverBehavior, drawCallouts, addCustomerPins, stateCounts, onStateSelect, selectedStateId, isMapLoaded, isMounted]);
 
   // Update colors when state counts or selection changes
   useEffect(() => {
