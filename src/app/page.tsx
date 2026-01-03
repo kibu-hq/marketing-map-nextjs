@@ -64,7 +64,7 @@ export default function Home() {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 1.5, ease: "easeIn" }}
+      transition={{ duration: 0.5, ease: "easeIn" }}
       className="w-full h-screen bg-white overflow-hidden font-[family-name:var(--font-asap)]"
       onMouseDown={(e) => {
         // Close panel when clicking anywhere except on states or the panel
