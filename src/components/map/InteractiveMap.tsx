@@ -326,7 +326,7 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
     svg.selectAll("*").remove(); // Clear previous content
 
     const projection = d3.geoAlbersUsa()
-      .scale(1000)
+      .scale(1200)
       .translate([MAP_DIMENSIONS.width / 2, MAP_DIMENSIONS.height / 2]);
 
     const path = d3.geoPath().projection(projection);

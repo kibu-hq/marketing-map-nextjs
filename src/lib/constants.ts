@@ -1,8 +1,8 @@
 import { StateEmojis, StateNames, StateAbbrevToName, SmallStateConfig } from './types';
 
 export const MAP_DIMENSIONS = {
-  width: 960,
-  height: 500,
+  width: 1056,
+  height: 550,
 };
 
 export const STATE_EMOJIS: StateEmojis = {
