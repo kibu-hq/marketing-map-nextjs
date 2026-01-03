@@ -324,6 +324,12 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove(); // Clear previous content
+    
+    // Add a transparent background to the SVG
+    svg.append("rect")
+      .attr("width", MAP_DIMENSIONS.width)
+      .attr("height", MAP_DIMENSIONS.height)
+      .attr("fill", "transparent");
 
     const projection = d3.geoAlbersUsa()
       .scale(1200)
@@ -412,6 +418,17 @@ export default function InteractiveMap({ customerData, onStateSelect, selectedSt
 
   return (
     <div className="relative w-full h-full flex justify-center items-center">
+      {/* Background cloud image */}
+      <div 
+        className="absolute inset-0 opacity-20 pointer-events-none"
+        style={{
+          backgroundImage: 'url(/data/images/cloud.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          zIndex: -1
+        }}
+      />
       <svg
         ref={svgRef}
         width={MAP_DIMENSIONS.width}
