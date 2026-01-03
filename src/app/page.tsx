@@ -61,7 +61,20 @@ export default function Home() {
   }
 
   return (
-    <div className="w-full h-screen bg-white overflow-hidden font-[family-name:var(--font-asap)]">
+    <div 
+      className="w-full h-screen bg-white overflow-hidden font-[family-name:var(--font-asap)]"
+      onMouseDown={(e) => {
+        // Close panel when clicking anywhere except on states or the panel
+        // Check if click is on a state path or callout
+        const target = e.target as HTMLElement;
+        const isStatePath = target.classList.contains('states');
+        const isCallout = target.closest('.callout-label') !== null;
+        
+        if (!isStatePath && !isCallout && isPanelOpen) {
+          handlePanelClose();
+        }
+      }}
+    >
       <div 
         className={`w-full h-full transition-all duration-400 ease-out ${
           isPanelOpen ? 'lg:pr-[320px]' : ''
@@ -74,12 +87,14 @@ export default function Home() {
         />
       </div>
       
-      <StateInfoPanel
-        isOpen={isPanelOpen}
-        onClose={handlePanelClose}
-        stateInfo={selectedState}
-        contentData={contentData}
-      />
+      <div onMouseDown={(e) => e.stopPropagation()}>
+        <StateInfoPanel
+          isOpen={isPanelOpen}
+          onClose={handlePanelClose}
+          stateInfo={selectedState}
+          contentData={contentData}
+        />
+      </div>
     </div>
   );
 }
