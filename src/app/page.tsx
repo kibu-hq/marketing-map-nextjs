@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import InteractiveMap from '@/components/map/InteractiveMap';
 import StateInfoPanel from '@/components/map/StateInfoPanel';
 import { CustomerData, ContentItem, StateInfo, MapDataResponse } from '@/lib/types';
@@ -55,13 +56,15 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-white">
-        <div className="text-lg text-gray-600">Loading customer map...</div>
       </div>
     );
   }
 
   return (
-    <div 
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.5, ease: "easeIn" }}
       className="w-full h-screen bg-white overflow-hidden font-[family-name:var(--font-asap)]"
       onMouseDown={(e) => {
         // Close panel when clicking anywhere except on states or the panel
@@ -95,6 +98,6 @@ export default function Home() {
           contentData={contentData}
         />
       </div>
-    </div>
+    </motion.div>
   );
 }
