@@ -223,6 +223,9 @@ export default function StateInfoPanel({ isOpen, onClose, stateInfo, contentData
                         rel="noopener noreferrer"
                         className="group block text-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 relative"
                       >
+                        <div className="flex items-center justify-center mb-2">
+                          <Megaphone className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                        </div>
                         <h4 className="font-bold text-gray-800">Already use Kibu?</h4>
                         <p className="text-sm text-gray-600 mt-1">Be our first story from {stateInfo.name} and get 2 months free, plus a social media shoutout!</p>
                         <ArrowUpRight className="w-4 h-4 text-gray-400 absolute top-3 right-3 group-hover:text-blue-500 transition-colors" />

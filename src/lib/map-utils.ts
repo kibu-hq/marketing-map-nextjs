@@ -115,6 +115,13 @@ export function getEventsForState(stateName: string, eventData: Event[]): Event[
 
   if (!stateAbbrev) return [];
 
-  // Use the state field directly from the event data
-  return eventData.filter(item => (item.state || '').toUpperCase() === stateAbbrev);
+  // Filter out past events
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+
+  // Use the state field directly from the event data and filter by date
+  return eventData.filter(item => {
+    const endDate = new Date(item.end_date);
+    return (item.state || '').toUpperCase() === stateAbbrev && endDate >= today;
+  });
 }
