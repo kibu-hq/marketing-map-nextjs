@@ -2,7 +2,7 @@
   {
     "name": "Zoey",
     "image": "Zoey.png",
-    "demo_link": "https://calendly.com/kibu_demo/30min",
+    "demo_link": "https://cal.com/zoeysweeny/kibu-demo?duration=30&overlayCalendar=true",
     "states": [
       "OR",
       "WY",
@@ -17,7 +17,7 @@
   {
     "name": "Sam",
     "image": "Sam.png",
-    "demo_link": "https://calendly.com/kibu_demo/30min",
+    "demo_link": "https://cal.com/sam-kibu/kibu-demo?duration=30&overlayCalendar=true",
     "states": [
       "NV",
       "NE",
@@ -33,7 +33,7 @@
   {
     "name": "Emma",
     "image": "Emma.png",
-    "demo_link": "https://calendly.com/kibu_demo/30min",
+    "demo_link": "https://cal.com/emma-kibu.com/kibu-demo?duration=30&overlayCalendar=true",
     "states": [
       "WA",
       "CA",
@@ -46,7 +46,7 @@
   {
     "name": "Teresa",
     "image": "Teresa.png",
-    "demo_link": "https://calendly.com/kibu_demo/30min",
+    "demo_link": "https://cal.com/teresaatkibu/kibu-demo?user=teresaatkibu&duration=30&overlayCalendar=true",
     "states": [
       "ID",
       "MI",
@@ -60,7 +60,7 @@
   {
     "name": "Daniel",
     "image": "Daniel.png",
-    "demo_link": "https://calendly.com/kibu_demo/30min",
+    "demo_link": "https://cal.com/daniel-caridi/kibu-demo?overlayCalendar=true",
     "states": [
       "CT"
     ]
@@ -68,7 +68,7 @@
   {
     "name": "Nic",
     "image": "Nic.png",
-    "demo_link": "https://calendly.com/kibu_demo/30min",
+    "demo_link": "https://cal.com/nickibu/kibu-demo?duration=30&overlayCalendar=true",
     "states": [
       "MT",
       "ND",
@@ -84,7 +84,7 @@
   {
     "name": "Joseph",
     "image": "Joseph.png",
-    "demo_link": "https://calendly.com/kibu_demo/30min",
+    "demo_link": "https://cal.com/joseph1/kibu-demo?duration=30&overlayCalendar=true",
     "states": [
       "KS",
       "OK",
